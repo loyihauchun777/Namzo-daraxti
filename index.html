@@ -128,10 +128,23 @@ const PRAYERS = [
 const CYCLE_LEN = 30;
 const EMPTY_RECORD = { bomdod:false, peshin:false, asr:false, shom:false, xufton:false };
 const LEAF_SPOTS = [
-  { x: 0, y: -46, r: 22 },{ x: -26, y: -32, r: 18 },{ x: 26, y: -32, r: 18 },
-  { x: -14, y: -58, r: 16 },{ x: 14, y: -58, r: 16 },{ x: -38, y: -14, r: 15 },
-  { x: 38, y: -14, r: 15 },{ x: 0, y: -74, r: 13 },{ x: -20, y: -6, r: 12 },
+  { x: 0, y: -8, r: 20 },
+  { x: -16, y: -2, r: 16 },
+  { x: 16, y: -2, r: 16 },
+  { x: -8, y: -22, r: 15 },
+  { x: 8, y: -22, r: 15 },
+  { x: -26, y: -10, r: 13 },
+  { x: 26, y: -10, r: 13 },
+  { x: 0, y: -30, r: 13 },
+  { x: -14, y: -36, r: 11 },
+  { x: 14, y: -36, r: 11 },
+  { x: -32, y: 2, r: 11 },
+  { x: 32, y: 2, r: 11 },
+  { x: 0, y: 6, r: 12 },
 ];
+const STAGE_TRUNK = [28, 50, 72, 94, 116];
+const STAGE_CANOPY_COUNT = [3, 6, 9, 11, 13];
+const STAGE_CANOPY_SCALE = [0.55, 0.68, 0.8, 0.9, 1.0];
 
 function fmt(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0"); return `${y}-${m}-${day}`; }
 function addDays(d,n){ const nd=new Date(d); nd.setDate(nd.getDate()+n); return nd; }
@@ -183,21 +196,38 @@ function todayDoneCount(){ return PRAYERS.filter(p=>todayRecord[p.key]).length; 
 function renderTree(){
   const prog = overallProgress();
   const stage = Math.min(4, Math.floor(prog*5));
-  const trunkH = 22 + stage*15;
-  const canopyCount = [2,4,6,8,9][stage];
+  const trunkH = STAGE_TRUNK[stage];
+  const canopyCount = STAGE_CANOPY_COUNT[stage];
+  const scale = STAGE_CANOPY_SCALE[stage];
   const canopyTone = ["#8FB86A","#7FAE5E","#6FA352","#5F9848","#548C3E"][stage];
+  const canopyToneDark = ["#6E9A52","#5F9848","#548C3E","#457A32","#3B6E29"][stage];
   const showFruit = cycleFinished && prog >= 0.85;
   const baseY = 210;
-  const canopyCenterY = baseY - trunkH;
+  const trunkTopY = baseY - trunkH;
+  const trunkW = 8 + stage*1.5;
 
-  let svg = `<ellipse cx="110" cy="214" rx="70" ry="10" fill="#0d1120" opacity="0.6" />`;
-  svg += `<rect x="106" y="${baseY-trunkH}" width="10" height="${trunkH}" rx="4" fill="#7A5A3C" />`;
-  LEAF_SPOTS.slice(0,canopyCount).forEach(spot=>{
-    svg += `<circle cx="${110+spot.x}" cy="${canopyCenterY+spot.y+46}" r="${spot.r}" fill="${canopyTone}" opacity="0.94" />`;
+  const spots = LEAF_SPOTS.slice(0, canopyCount);
+
+  let svg = `<ellipse cx="110" cy="214" rx="66" ry="9" fill="#0d1120" opacity="0.55" />`;
+  // little root flare + trunk
+  svg += `<path d="M ${110-trunkW/2-4} ${baseY} Q ${110-trunkW/2} ${baseY-10} ${110-trunkW/2} ${trunkTopY+trunkH*0.15}
+           L ${110-trunkW/2} ${trunkTopY} L ${110+trunkW/2} ${trunkTopY}
+           L ${110+trunkW/2} ${trunkTopY+trunkH*0.15} Q ${110+trunkW/2} ${baseY-10} ${110+trunkW/2+4} ${baseY} Z"
+           fill="#7A5A3C" />`;
+  svg += `<rect x="${110-trunkW*0.15}" y="${trunkTopY}" width="${trunkW*0.3}" height="${trunkH*0.9}" fill="#8C6B47" opacity="0.5" />`;
+
+  // back layer (darker) then front layer (lighter) for depth
+  spots.forEach(spot=>{
+    const r = spot.r * scale * 0.72;
+    svg += `<circle cx="${110+spot.x*scale*1.15}" cy="${trunkTopY+spot.y*scale}" r="${r}" fill="${canopyToneDark}" opacity="0.85" />`;
+  });
+  spots.forEach(spot=>{
+    const r = spot.r * scale;
+    svg += `<circle cx="${110+spot.x*scale}" cy="${trunkTopY+spot.y*scale-3}" r="${r}" fill="${canopyTone}" opacity="0.96" />`;
   });
   if (showFruit){
-    LEAF_SPOTS.slice(0,canopyCount).forEach((spot,i)=>{
-      if (i%2===0) svg += `<circle cx="${110+spot.x+6}" cy="${canopyCenterY+spot.y+50}" r="4.5" fill="#F2C879" />`;
+    spots.forEach((spot,i)=>{
+      if (i%2===0) svg += `<circle cx="${110+spot.x*scale+5}" cy="${trunkTopY+spot.y*scale+3}" r="4.5" fill="#F2C879" />`;
     });
   }
   document.getElementById("treesvg").innerHTML = svg;

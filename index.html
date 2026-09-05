@@ -24,14 +24,30 @@
   .header { text-align: center; margin-bottom: 4px; }
   .daycount { font-size: 13px; letter-spacing: 0.02em; color: #8B93AB; margin-bottom: 2px; }
   .title { font-size: 26px; font-weight: 800; color: #F2C879; }
-  .treewrap { position: relative; width: 220px; height: 230px; margin: 8px 0 6px; }
-  .treewrap.glow svg { filter: drop-shadow(0 0 14px rgba(242, 200, 121, 0.55)); }
+  .sky-stage { position: relative; width: 280px; height: 250px; margin: 2px 0 6px; }
+  .sky-stage.glow .island-svg { filter: drop-shadow(0 0 16px rgba(242, 200, 121, 0.5)); }
+  .clouds { position: absolute; top: 0; left: 0; width: 100%; height: 90px; pointer-events: none; }
+  .cloud { position: absolute; }
+  .cloud svg { display: block; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.28)); }
+  .cloud.c1 { top: 4px;  left: 4px;   width: 84px; animation: driftA 22s ease-in-out infinite; }
+  .cloud.c2 { top: 0px;  left: 108px; width: 66px; animation: driftB 27s ease-in-out infinite; animation-delay: -8s; }
+  .cloud.c3 { top: 22px; left: 192px; width: 58px; animation: driftA 18s ease-in-out infinite; animation-delay: -4s; }
+  @keyframes driftA { 0%,100% { transform: translate(0,0); } 50% { transform: translate(13px,-4px); } }
+  @keyframes driftB { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-15px,3px); } }
+  .rain-layer { position: absolute; top: 34px; left: 0; width: 100%; height: 140px; pointer-events: none; overflow: visible; }
+  .raindrop {
+    position: absolute; width: 2px; height: 13px; border-radius: 2px; top: 0;
+    background: linear-gradient(to bottom, rgba(185,213,255,0.95), rgba(185,213,255,0));
+    animation: rainfall 1.05s linear forwards;
+  }
+  @keyframes rainfall { 0% { transform: translateY(0); opacity: 0.9; } 100% { transform: translateY(115px); opacity: 0; } }
+  .island-svg { position: relative; z-index: 1; display: block; margin: 40px auto 0; }
   .leaf-fall {
     position: absolute;
     width: 8px; height: 8px;
     border-radius: 2px 8px 2px 8px;
     background: #7FAE5E;
-    top: 60px;
+    top: 110px;
     animation: fall 1.1s ease-in forwards;
     opacity: 0.9;
     pointer-events: none;
@@ -95,8 +111,45 @@
     <div class="title">Kundalik namozlar</div>
   </div>
 
-  <div class="treewrap" id="treewrap">
-    <svg viewBox="0 0 220 230" width="220" height="230" id="treesvg"></svg>
+  <div class="sky-stage" id="skyStage">
+    <div class="clouds">
+      <div class="cloud c1">
+        <svg viewBox="0 0 100 46" width="100" height="46">
+          <defs><linearGradient id="cg1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff"/><stop offset="55%" stop-color="#ffffff"/>
+            <stop offset="60%" stop-color="#dee3ef"/><stop offset="100%" stop-color="#c7cfe2"/>
+          </linearGradient></defs>
+          <ellipse cx="30" cy="26" rx="26" ry="15" fill="url(#cg1)"/>
+          <ellipse cx="56" cy="19" rx="19" ry="13" fill="url(#cg1)"/>
+          <ellipse cx="73" cy="27" rx="15" ry="11" fill="url(#cg1)"/>
+          <ellipse cx="16" cy="30" rx="13" ry="9" fill="url(#cg1)"/>
+        </svg>
+      </div>
+      <div class="cloud c2">
+        <svg viewBox="0 0 90 42" width="90" height="42">
+          <defs><linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff"/><stop offset="55%" stop-color="#ffffff"/>
+            <stop offset="60%" stop-color="#dee3ef"/><stop offset="100%" stop-color="#c7cfe2"/>
+          </linearGradient></defs>
+          <ellipse cx="26" cy="24" rx="22" ry="13" fill="url(#cg2)"/>
+          <ellipse cx="50" cy="17" rx="16" ry="11" fill="url(#cg2)"/>
+          <ellipse cx="65" cy="25" rx="12" ry="9" fill="url(#cg2)"/>
+        </svg>
+      </div>
+      <div class="cloud c3">
+        <svg viewBox="0 0 80 38" width="80" height="38">
+          <defs><linearGradient id="cg3" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffffff"/><stop offset="55%" stop-color="#ffffff"/>
+            <stop offset="60%" stop-color="#dee3ef"/><stop offset="100%" stop-color="#c7cfe2"/>
+          </linearGradient></defs>
+          <ellipse cx="22" cy="21" rx="19" ry="11" fill="url(#cg3)"/>
+          <ellipse cx="43" cy="15" rx="14" ry="9" fill="url(#cg3)"/>
+          <ellipse cx="58" cy="22" rx="11" ry="8" fill="url(#cg3)"/>
+        </svg>
+      </div>
+    </div>
+    <div class="rain-layer" id="rainLayer"></div>
+    <svg viewBox="0 0 260 240" width="260" height="240" class="island-svg" id="islandsvg"></svg>
   </div>
 
   <div class="progress" id="progress">Ushbu sikldagi o'sish: <b>0%</b></div>
@@ -193,6 +246,34 @@ function overallProgress(){
 
 function todayDoneCount(){ return PRAYERS.filter(p=>todayRecord[p.key]).length; }
 
+const CX = 140; // island / tree horizontal anchor
+
+function islandMarkup(){
+  return `
+    <defs>
+      <linearGradient id="grassGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#8fd35c"/><stop offset="47%" stop-color="#8fd35c"/>
+        <stop offset="53%" stop-color="#6bb43e"/><stop offset="100%" stop-color="#6bb43e"/>
+      </linearGradient>
+      <linearGradient id="dirtGradL" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#a5713f"/><stop offset="100%" stop-color="#8a5a30"/>
+      </linearGradient>
+      <linearGradient id="dirtGradR" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#7c4f28"/><stop offset="100%" stop-color="#603c1e"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="140" cy="205" rx="92" ry="13" fill="#05060f" opacity="0.4" />
+    <polygon points="50,95 105,68 175,68 230,95 175,122 105,122" fill="url(#grassGrad)" />
+    <polygon points="50,95 105,122 92,178 15,152" fill="url(#dirtGradL)" />
+    <polygon points="230,95 175,122 190,180 258,152" fill="url(#dirtGradR)" />
+    <polygon points="105,122 175,122 190,180 92,178" fill="url(#dirtGradR)" opacity="0.85" />
+    <polygon points="83,104 96,96 100,109 88,113" fill="#dcdfe6" />
+    <polygon points="96,96 100,109 106,101" fill="#b7bcc8" />
+    <polygon points="184,100 198,94 202,105 190,110" fill="#dcdfe6" />
+    <polygon points="198,94 202,105 208,97" fill="#b7bcc8" />
+  `;
+}
+
 function renderTree(){
   const prog = overallProgress();
   const stage = Math.min(4, Math.floor(prog*5));
@@ -202,36 +283,35 @@ function renderTree(){
   const canopyTone = ["#8FB86A","#7FAE5E","#6FA352","#5F9848","#548C3E"][stage];
   const canopyToneDark = ["#6E9A52","#5F9848","#548C3E","#457A32","#3B6E29"][stage];
   const showFruit = cycleFinished && prog >= 0.85;
-  const baseY = 210;
+  const baseY = 95;
   const trunkTopY = baseY - trunkH;
-  const trunkW = 8 + stage*1.5;
+  const trunkW = 7 + stage*1.3;
 
   const spots = LEAF_SPOTS.slice(0, canopyCount);
 
-  let svg = `<ellipse cx="110" cy="214" rx="66" ry="9" fill="#0d1120" opacity="0.55" />`;
-  // little root flare + trunk
-  svg += `<path d="M ${110-trunkW/2-4} ${baseY} Q ${110-trunkW/2} ${baseY-10} ${110-trunkW/2} ${trunkTopY+trunkH*0.15}
-           L ${110-trunkW/2} ${trunkTopY} L ${110+trunkW/2} ${trunkTopY}
-           L ${110+trunkW/2} ${trunkTopY+trunkH*0.15} Q ${110+trunkW/2} ${baseY-10} ${110+trunkW/2+4} ${baseY} Z"
-           fill="#7A5A3C" />`;
-  svg += `<rect x="${110-trunkW*0.15}" y="${trunkTopY}" width="${trunkW*0.3}" height="${trunkH*0.9}" fill="#8C6B47" opacity="0.5" />`;
+  let svg = islandMarkup();
 
-  // back layer (darker) then front layer (lighter) for depth
+  svg += `<path d="M ${CX-trunkW/2-3} ${baseY} Q ${CX-trunkW/2} ${baseY-8} ${CX-trunkW/2} ${trunkTopY+trunkH*0.15}
+           L ${CX-trunkW/2} ${trunkTopY} L ${CX+trunkW/2} ${trunkTopY}
+           L ${CX+trunkW/2} ${trunkTopY+trunkH*0.15} Q ${CX+trunkW/2} ${baseY-8} ${CX+trunkW/2+3} ${baseY} Z"
+           fill="#7A5A3C" />`;
+  svg += `<rect x="${CX-trunkW*0.15}" y="${trunkTopY}" width="${trunkW*0.3}" height="${trunkH*0.9}" fill="#8C6B47" opacity="0.5" />`;
+
   spots.forEach(spot=>{
     const r = spot.r * scale * 0.72;
-    svg += `<circle cx="${110+spot.x*scale*1.15}" cy="${trunkTopY+spot.y*scale}" r="${r}" fill="${canopyToneDark}" opacity="0.85" />`;
+    svg += `<circle cx="${CX+spot.x*scale*1.15}" cy="${trunkTopY+spot.y*scale}" r="${r}" fill="${canopyToneDark}" opacity="0.85" />`;
   });
   spots.forEach(spot=>{
     const r = spot.r * scale;
-    svg += `<circle cx="${110+spot.x*scale}" cy="${trunkTopY+spot.y*scale-3}" r="${r}" fill="${canopyTone}" opacity="0.96" />`;
+    svg += `<circle cx="${CX+spot.x*scale}" cy="${trunkTopY+spot.y*scale-3}" r="${r}" fill="${canopyTone}" opacity="0.96" />`;
   });
   if (showFruit){
     spots.forEach((spot,i)=>{
-      if (i%2===0) svg += `<circle cx="${110+spot.x*scale+5}" cy="${trunkTopY+spot.y*scale+3}" r="4.5" fill="#F2C879" />`;
+      if (i%2===0) svg += `<circle cx="${CX+spot.x*scale+5}" cy="${trunkTopY+spot.y*scale+3}" r="4.5" fill="#F2C879" />`;
     });
   }
-  document.getElementById("treesvg").innerHTML = svg;
-  document.getElementById("treewrap").classList.toggle("glow", !cycleFinished && todayDoneCount()===PRAYERS.length);
+  document.getElementById("islandsvg").innerHTML = svg;
+  document.getElementById("skyStage").classList.toggle("glow", !cycleFinished && todayDoneCount()===PRAYERS.length);
   document.getElementById("progress").innerHTML = `Ushbu sikldagi o'sish: <b>${Math.round(prog*100)}%</b>`;
   document.getElementById("daycount").textContent = `${Math.min(dayIndex+1, CYCLE_LEN)}-kun / ${CYCLE_LEN}`;
 }
@@ -241,9 +321,31 @@ function dropLeaf(){
   el.className = "leaf-fall";
   const x = -30 + Math.random()*60;
   el.style.left = `calc(50% + ${x}px)`;
-  document.getElementById("treewrap").appendChild(el);
+  document.getElementById("skyStage").appendChild(el);
   el.addEventListener("animationend", ()=> el.remove());
 }
+
+// occasional rain bursts from the clouds
+function spawnRain(){
+  const layer = document.getElementById("rainLayer");
+  const count = 3 + Math.floor(Math.random()*4);
+  for (let i=0;i<count;i++){
+    setTimeout(()=>{
+      const d = document.createElement("div");
+      d.className = "raindrop";
+      d.style.left = (10 + Math.random()*240) + "px";
+      d.style.animationDelay = (Math.random()*0.3) + "s";
+      layer.appendChild(d);
+      d.addEventListener("animationend", ()=> d.remove());
+    }, i*140);
+  }
+  scheduleRain();
+}
+function scheduleRain(){
+  const next = 12000 + Math.random()*14000;
+  setTimeout(spawnRain, next);
+}
+scheduleRain();
 
 function togglePrayer(key){
   const was = !!todayRecord[key];

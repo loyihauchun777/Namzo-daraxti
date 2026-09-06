@@ -353,18 +353,6 @@ function pebble(x, y, r, rot, tone){
   </g>`;
 }
 
-function grassTufts(cx, seed){
-  const rand = (n)=> { const x = Math.sin(n*777)*10000; return x - Math.floor(x); };
-  let out = "";
-  for (let i=0;i<6;i++){
-    const x = cx - 48 + i*19 + rand(seed+i)*6;
-    const rot = -30 + rand(seed+i+3)*60;
-    const c = i%2===0 ? '#5C8F44' : '#4C7A38';
-    out += leafTuft(x, 244, 0.85 + rand(seed+i)*0.3, rot, c);
-  }
-  return out;
-}
-
 function canopyCluster(id, cx, cy, spread, count, fillA, fillB){
   // fillA = light facet, fillB = dark facet; mid tone is blended between them.
   const mid = fillA; // base fill under the facets
@@ -438,7 +426,6 @@ const TREE_STAGES = [
     ${groundMound('ground1',120,246,50,10)}
     ${pebble(84,249,3.4,-15,'cool')}
     ${pebble(158,250,2.8,20,'warm')}
-    ${grassTufts(120,1)}
     <path d="M120 244C118 222 118 204 121 188" stroke="url(#trunk1)" stroke-width="3.5" stroke-linecap="round" fill="none"/>
     ${twigCascade(SEEDLING_TWIGS, count, '#8F6E48')}
     ${leafTuft(121,188,1.5,-25,'#6FA352')}
@@ -451,7 +438,6 @@ const TREE_STAGES = [
     ${pebble(80,250,3.8,-10,'cool')}
     ${pebble(164,251,3.2,25,'warm')}
     ${pebble(120,254,2.4,5,'cool')}
-    ${grassTufts(120,2)}
     <path d="M120 244C117 211 119 181 122 158" stroke="url(#trunk2)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
     <path d="M120 211C108 204 100 200 92 198" stroke="url(#trunk2)" stroke-width="3" stroke-linecap="round" fill="none"/>
     <path d="M121 196C133 188 141 184 149 182" stroke="url(#trunk2)" stroke-width="3" stroke-linecap="round" fill="none"/>
@@ -468,7 +454,6 @@ const TREE_STAGES = [
     ${pebble(72,252,4.2,-12,'cool')}
     ${pebble(172,253,3.6,22,'warm')}
     ${pebble(115,257,2.8,8,'cool')}
-    ${grassTufts(120,3)}
     <path d="M120 244C117 211 118 171 120 134" stroke="url(#trunk3)" stroke-width="8" stroke-linecap="round" fill="none"/>
     <path d="M119 181C104 171 92 166 80 163" stroke="url(#trunk3)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
     <path d="M121 174C136 163 149 158 162 155" stroke="url(#trunk3)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
@@ -484,7 +469,6 @@ const TREE_STAGES = [
     ${pebble(182,254,4.0,20,'warm')}
     ${pebble(108,258,3.0,10,'cool')}
     ${pebble(146,257,2.6,-8,'warm')}
-    ${grassTufts(120,4)}
     <path d="M120 244C117 206 118 161 120 114" stroke="url(#trunk4)" stroke-width="11" stroke-linecap="round" fill="none"/>
     <path d="M118 166C98 154 82 148 66 144" stroke="url(#trunk4)" stroke-width="6" stroke-linecap="round" fill="none"/>
     <path d="M122 156C142 143 158 136 176 132" stroke="url(#trunk4)" stroke-width="6" stroke-linecap="round" fill="none"/>
@@ -500,7 +484,6 @@ const TREE_STAGES = [
     ${pebble(186,255,4.2,20,'warm')}
     ${pebble(104,259,3.2,10,'cool')}
     ${pebble(148,258,2.8,-8,'warm')}
-    ${grassTufts(120,5)}
     <path d="M120 244C117 206 118 161 120 114" stroke="url(#trunk5)" stroke-width="11" stroke-linecap="round" fill="none"/>
     <path d="M118 166C98 154 82 148 66 144" stroke="url(#trunk5)" stroke-width="6" stroke-linecap="round" fill="none"/>
     <path d="M122 156C142 143 158 136 176 132" stroke="url(#trunk5)" stroke-width="6" stroke-linecap="round" fill="none"/>

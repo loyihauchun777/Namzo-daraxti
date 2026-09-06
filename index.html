@@ -18,14 +18,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 28px 18px 40px;
+    padding: 14px 18px 90px;
     -webkit-tap-highlight-color: transparent;
   }
+  .topbar { width: 100%; max-width: 380px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .topbar svg { width: 22px; height: 22px; color: #C9CEDD; }
+  .topbar .topbar-title { font-size: 17px; font-weight: 700; color: #F1EDE3; }
   .header { text-align: center; margin-bottom: 4px; }
-  .daycount { font-size: 13px; letter-spacing: 0.02em; color: #8B93AB; margin-bottom: 2px; }
-  .title { font-size: 26px; font-weight: 800; color: #F2C879; }
+  .header .leaf-badge { width: 26px; height: 26px; margin: 0 auto 6px; color: #6FA352; opacity: 0.9; }
+  .daycount { font-size: 13.5px; letter-spacing: 0.01em; color: #A8AFC2; margin-bottom: 2px; line-height: 1.4; }
+  .daycount b { color: #6FA352; font-weight: 700; }
+  .title { display: none; }
   .sky-stage { position: relative; width: 280px; height: 250px; margin: 2px 0 6px; }
-  .sky-stage.glow .island-svg { filter: drop-shadow(0 0 16px rgba(242, 200, 121, 0.5)); }
   .clouds { position: absolute; top: 0; left: 0; width: 100%; height: 90px; pointer-events: none; }
   .cloud { position: absolute; }
   .cloud svg { display: block; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.28)); }
@@ -41,7 +45,39 @@
     animation: rainfall 1.05s linear forwards;
   }
   @keyframes rainfall { 0% { transform: translateY(0); opacity: 0.9; } 100% { transform: translateY(115px); opacity: 0; } }
-  .island-svg { position: relative; z-index: 1; display: block; margin: 40px auto 0; }
+  .tree-img {
+    display: block; width: 250px; max-width: 78vw; margin: 34px auto 0;
+    border-radius: 20px; box-shadow: 0 12px 28px rgba(0,0,0,0.5);
+    transition: transform 0.28s cubic-bezier(.34,1.56,.64,1), opacity 0.2s ease;
+  }
+  .tree-img.pulse { transform: scale(1.045); }
+  .sky-stage.glow .tree-img { filter: drop-shadow(0 0 16px rgba(242, 200, 121, 0.6)); }
+  .sparkle-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; z-index: 2; }
+  .sparkle {
+    position: absolute; font-size: 15px; line-height: 1;
+    animation: sparkleUp 1s ease-out forwards;
+  }
+  @keyframes sparkleUp {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-70px) scale(1.1); opacity: 0; }
+  }
+  .today-leaves {
+    display: flex; gap: 10px; justify-content: center; align-items: center;
+    margin: 14px 0 2px;
+  }
+  .today-leaf {
+    width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    color: rgba(241,237,227,0.22); transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), color 0.25s ease;
+  }
+  .today-leaf svg { width: 100%; height: 100%; }
+  .today-leaf.done { color: #6FA352; }
+  .today-leaf.pop { animation: leafPop 0.45s cubic-bezier(.34,1.56,.64,1); }
+  @keyframes leafPop {
+    0% { transform: scale(1); }
+    45% { transform: scale(1.55) rotate(-8deg); }
+    100% { transform: scale(1); }
+  }
   .leaf-fall {
     position: absolute;
     width: 8px; height: 8px;
@@ -56,18 +92,31 @@
     0% { transform: translateY(0) rotate(0deg); opacity: 0.9; }
     100% { transform: translateY(150px) rotate(220deg); opacity: 0; }
   }
-  .progress { font-size: 13px; color: #8B93AB; margin-bottom: 18px; text-align: center; }
-  .progress b { color: #F1EDE3; }
-  .list { width: 100%; max-width: 360px; }
+  .progress-pill {
+    width: 100%; max-width: 360px; display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.045); border: 1px solid rgba(241,237,227,0.08);
+    border-radius: 999px; padding: 10px 16px; margin: 4px 0 16px;
+  }
+  .progress-pill svg { width: 20px; height: 20px; flex-shrink: 0; color: #6FA352; }
+  .progress-track { flex: 1; height: 8px; border-radius: 999px; background: rgba(241,237,227,0.12); overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,#6FA352,#8FB86A); border-radius: 999px; transition: width 0.3s ease; }
+  .progress-count { font-size: 13.5px; font-weight: 700; color: #F1EDE3; white-space: nowrap; text-align: right; line-height: 1.3; }
+  .progress-count span { display: block; font-size: 10.5px; font-weight: 500; color: #8B93AB; }
+  .list { width: 100%; max-width: 360px; background: rgba(255,255,255,0.03); border: 1px solid rgba(241,237,227,0.07); border-radius: 18px; padding: 4px 14px; }
   .row {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 15px 4px; border-bottom: 1px solid rgba(241,237,227,0.08);
-    cursor: pointer; user-select: none;
+    padding: 13px 0; border-bottom: 1px solid rgba(241,237,227,0.07);
+    cursor: pointer; user-select: none; gap: 12px;
   }
   .row:last-child { border-bottom: none; }
-  .row-left { display: flex; flex-direction: column; gap: 3px; }
-  .row-name { font-size: 17px; font-weight: 600; }
-  .row-sub { font-size: 12.5px; color: #8B93AB; }
+  .row-icon {
+    width: 46px; height: 50px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .row-icon img { width: 100%; height: 100%; object-fit: contain; }
+  .row-mid { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .row-name { font-size: 16px; font-weight: 600; }
+  .row-sub { font-size: 12px; color: #8B93AB; }
   .check {
     width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
     border: 1.5px solid rgba(241,237,227,0.28);
@@ -82,19 +131,6 @@
     background: rgba(242,200,121,0.12); border: 1px solid rgba(242,200,121,0.35);
     color: #F2C879; font-size: 13.5px; font-weight: 600; text-align: center;
   }
-  .strip-wrap { width: 100%; max-width: 380px; margin-top: 26px; }
-  .strip-label { font-size: 12.5px; color: #8B93AB; margin-bottom: 10px; }
-  .strip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; }
-  .dot {
-    width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
-    border: 1.5px solid rgba(241,237,227,0.25);
-  }
-  .dot.full { background: #6FA352; border-color: #6FA352; }
-  .dot.partial { background: #E3A857; border-color: #E3A857; }
-  .dot.missed { background: rgba(201,113,74,0.55); border-color: rgba(201,113,74,0.7); }
-  .dot.future { background: transparent; }
-  .dot.iscurrent { box-shadow: 0 0 0 3px rgba(242,200,121,0.35); }
-  .peek { margin-top: 10px; font-size: 12.5px; color: #C9CEDD; text-align: center; min-height: 16px; }
   .finish { margin-top: 20px; text-align: center; max-width: 320px; display: none; }
   .finish h3 { font-size: 19px; margin-bottom: 8px; color: #F2C879; }
   .finish p { font-size: 13.5px; color: #C9CEDD; line-height: 1.5; margin-bottom: 16px; }
@@ -102,13 +138,30 @@
     background: #E3A857; color: #10142a; border: none; border-radius: 999px;
     padding: 12px 26px; font-size: 14.5px; font-weight: 700; cursor: pointer;
   }
+  .bottom-nav {
+    position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 36px); max-width: 360px;
+    background: rgba(20,24,45,0.92); backdrop-filter: blur(10px);
+    border: 1px solid rgba(241,237,227,0.09); border-radius: 999px;
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 12px 0; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+  }
+  .bottom-nav .nav-item { display: flex; align-items: center; justify-content: center; padding: 4px 18px; color: #8B93AB; }
+  .bottom-nav .nav-item svg { width: 22px; height: 22px; }
+  .bottom-nav .nav-item.active { color: #6FA352; }
 </style>
 </head>
 <body>
 
+  <div class="topbar">
+    <svg viewBox="0 0 24 24" fill="none" onclick="history.back()"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="topbar-title">Namoz daraxti</div>
+    <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+  </div>
+
   <div class="header">
-    <div class="daycount" id="daycount">1-kun / 30</div>
-    <div class="title">Kundalik namozlar</div>
+    <svg class="leaf-badge" viewBox="0 0 24 24" fill="none"><path d="M4 20C4 12 9 4 20 4C20 14 13 20 4 20Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 20C8 16 12 12 18 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <div class="daycount">Har bir namoz &ndash;<br/><b>daraxtingizning yangi shoxchasi</b></div>
   </div>
 
   <div class="sky-stage" id="skyStage">
@@ -149,10 +202,17 @@
       </div>
     </div>
     <div class="rain-layer" id="rainLayer"></div>
-    <svg viewBox="0 0 260 240" width="260" height="240" class="island-svg" id="islandsvg"></svg>
+    <div class="sparkle-layer" id="sparkleLayer"></div>
+    <img id="treeImg" class="tree-img" src="stage1.png" alt="daraxt" />
   </div>
 
-  <div class="progress" id="progress">Ushbu sikldagi o'sish: <b>0%</b></div>
+  <div class="today-leaves" id="todayLeaves"></div>
+
+  <div class="progress-pill">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 14 12 9 12 4M12 4C9 4 6 7 6 11C9 11 12 8 12 4ZM12 9C14.5 9 17 11 17 14C14 14 12 12 12 9Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <div class="progress-count" id="progressCount">0 / 30<span>kun</span></div>
+  </div>
 
   <div class="list" id="list"></div>
 
@@ -164,10 +224,10 @@
     <button class="btn" onclick="startNewCycle()">Yangi sikl boshlash</button>
   </div>
 
-  <div class="strip-wrap">
-    <div class="strip-label">30 kunlik tarix</div>
-    <div class="strip" id="strip"></div>
-    <div class="peek" id="peek"></div>
+  <div class="bottom-nav">
+    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4L20 11M6 10V20H18V10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20C4 12 9 4 20 4C20 14 13 20 4 20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M4 20C8 16 12 12 18 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V11M12 19V5M19 19V14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div>
   </div>
 
 <script>
@@ -180,24 +240,6 @@ const PRAYERS = [
 ];
 const CYCLE_LEN = 30;
 const EMPTY_RECORD = { bomdod:false, peshin:false, asr:false, shom:false, xufton:false };
-const LEAF_SPOTS = [
-  { x: 0, y: -8, r: 20 },
-  { x: -16, y: -2, r: 16 },
-  { x: 16, y: -2, r: 16 },
-  { x: -8, y: -22, r: 15 },
-  { x: 8, y: -22, r: 15 },
-  { x: -26, y: -10, r: 13 },
-  { x: 26, y: -10, r: 13 },
-  { x: 0, y: -30, r: 13 },
-  { x: -14, y: -36, r: 11 },
-  { x: 14, y: -36, r: 11 },
-  { x: -32, y: 2, r: 11 },
-  { x: 32, y: 2, r: 11 },
-  { x: 0, y: 6, r: 12 },
-];
-const STAGE_TRUNK = [28, 50, 72, 94, 116];
-const STAGE_CANOPY_COUNT = [3, 6, 9, 11, 13];
-const STAGE_CANOPY_SCALE = [0.55, 0.68, 0.8, 0.9, 1.0];
 
 function fmt(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0"); return `${y}-${m}-${day}`; }
 function addDays(d,n){ const nd=new Date(d); nd.setDate(nd.getDate()+n); return nd; }
@@ -246,74 +288,16 @@ function overallProgress(){
 
 function todayDoneCount(){ return PRAYERS.filter(p=>todayRecord[p.key]).length; }
 
-const CX = 140; // island / tree horizontal anchor
-
-function islandMarkup(){
-  return `
-    <defs>
-      <linearGradient id="grassGrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#8fd35c"/><stop offset="47%" stop-color="#8fd35c"/>
-        <stop offset="53%" stop-color="#6bb43e"/><stop offset="100%" stop-color="#6bb43e"/>
-      </linearGradient>
-      <linearGradient id="dirtGradL" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#a5713f"/><stop offset="100%" stop-color="#8a5a30"/>
-      </linearGradient>
-      <linearGradient id="dirtGradR" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#7c4f28"/><stop offset="100%" stop-color="#603c1e"/>
-      </linearGradient>
-    </defs>
-    <ellipse cx="140" cy="205" rx="92" ry="13" fill="#05060f" opacity="0.4" />
-    <polygon points="50,95 105,68 175,68 230,95 175,122 105,122" fill="url(#grassGrad)" />
-    <polygon points="50,95 105,122 92,178 15,152" fill="url(#dirtGradL)" />
-    <polygon points="230,95 175,122 190,180 258,152" fill="url(#dirtGradR)" />
-    <polygon points="105,122 175,122 190,180 92,178" fill="url(#dirtGradR)" opacity="0.85" />
-    <polygon points="83,104 96,96 100,109 88,113" fill="#dcdfe6" />
-    <polygon points="96,96 100,109 106,101" fill="#b7bcc8" />
-    <polygon points="184,100 198,94 202,105 190,110" fill="#dcdfe6" />
-    <polygon points="198,94 202,105 208,97" fill="#b7bcc8" />
-  `;
-}
-
 function renderTree(){
   const prog = overallProgress();
-  const stage = Math.min(4, Math.floor(prog*5));
-  const trunkH = STAGE_TRUNK[stage];
-  const canopyCount = STAGE_CANOPY_COUNT[stage];
-  const scale = STAGE_CANOPY_SCALE[stage];
-  const canopyTone = ["#8FB86A","#7FAE5E","#6FA352","#5F9848","#548C3E"][stage];
-  const canopyToneDark = ["#6E9A52","#5F9848","#548C3E","#457A32","#3B6E29"][stage];
-  const showFruit = cycleFinished && prog >= 0.85;
-  const baseY = 95;
-  const trunkTopY = baseY - trunkH;
-  const trunkW = 7 + stage*1.3;
-
-  const spots = LEAF_SPOTS.slice(0, canopyCount);
-
-  let svg = islandMarkup();
-
-  svg += `<path d="M ${CX-trunkW/2-3} ${baseY} Q ${CX-trunkW/2} ${baseY-8} ${CX-trunkW/2} ${trunkTopY+trunkH*0.15}
-           L ${CX-trunkW/2} ${trunkTopY} L ${CX+trunkW/2} ${trunkTopY}
-           L ${CX+trunkW/2} ${trunkTopY+trunkH*0.15} Q ${CX+trunkW/2} ${baseY-8} ${CX+trunkW/2+3} ${baseY} Z"
-           fill="#7A5A3C" />`;
-  svg += `<rect x="${CX-trunkW*0.15}" y="${trunkTopY}" width="${trunkW*0.3}" height="${trunkH*0.9}" fill="#8C6B47" opacity="0.5" />`;
-
-  spots.forEach(spot=>{
-    const r = spot.r * scale * 0.72;
-    svg += `<circle cx="${CX+spot.x*scale*1.15}" cy="${trunkTopY+spot.y*scale}" r="${r}" fill="${canopyToneDark}" opacity="0.85" />`;
-  });
-  spots.forEach(spot=>{
-    const r = spot.r * scale;
-    svg += `<circle cx="${CX+spot.x*scale}" cy="${trunkTopY+spot.y*scale-3}" r="${r}" fill="${canopyTone}" opacity="0.96" />`;
-  });
-  if (showFruit){
-    spots.forEach((spot,i)=>{
-      if (i%2===0) svg += `<circle cx="${CX+spot.x*scale+5}" cy="${trunkTopY+spot.y*scale+3}" r="4.5" fill="#F2C879" />`;
-    });
-  }
-  document.getElementById("islandsvg").innerHTML = svg;
+  const showBloom = cycleFinished && prog >= 0.85;
+  const stageIdx = showBloom ? 4 : Math.min(3, Math.floor(prog*4));
+  const src = `stage${stageIdx+1}.png`;
+  const img = document.getElementById("treeImg");
+  if (!img.src.endsWith(src)) img.src = src;
   document.getElementById("skyStage").classList.toggle("glow", !cycleFinished && todayDoneCount()===PRAYERS.length);
-  document.getElementById("progress").innerHTML = `Ushbu sikldagi o'sish: <b>${Math.round(prog*100)}%</b>`;
-  document.getElementById("daycount").textContent = `${Math.min(dayIndex+1, CYCLE_LEN)}-kun / ${CYCLE_LEN}`;
+  document.getElementById("progressFill").style.width = `${Math.round(prog*100)}%`;
+  document.getElementById("progressCount").innerHTML = `${Math.min(dayIndex+1, CYCLE_LEN)} / ${CYCLE_LEN}<span>kun</span>`;
 }
 
 function dropLeaf(){
@@ -347,15 +331,60 @@ function scheduleRain(){
 }
 scheduleRain();
 
+const PRAYER_ICON_FILES = {
+  bomdod: "bomdod_icon.png",
+  peshin: "peshin_icon.png",
+  asr: "asr_icon.png",
+  shom: "shom_icon.png",
+  xufton: "xufton_icon.png",
+};
+
+function sparkleBurst(){
+  const layer = document.getElementById("sparkleLayer");
+  const glyphs = ["🌿","✨","💧"];
+  const count = 3 + Math.floor(Math.random()*2);
+  for (let i=0;i<count;i++){
+    const s = document.createElement("div");
+    s.className = "sparkle";
+    s.textContent = glyphs[Math.floor(Math.random()*glyphs.length)];
+    const x = 50 + (Math.random()*60-30);
+    s.style.left = `calc(50% + ${x}px)`;
+    s.style.bottom = "70px";
+    s.style.animationDelay = (i*0.08) + "s";
+    layer.appendChild(s);
+    s.addEventListener("animationend", ()=> s.remove());
+  }
+  const img = document.getElementById("treeImg");
+  img.classList.add("pulse");
+  setTimeout(()=> img.classList.remove("pulse"), 280);
+}
+
 function togglePrayer(key){
   const was = !!todayRecord[key];
   todayRecord = {...todayRecord, [key]: !was};
   scores[todayStr] = todayDoneCount()/PRAYERS.length;
   saveRecord(todayStr, todayRecord);
-  if (was) dropLeaf();
+  if (was) dropLeaf(); else sparkleBurst();
   renderList();
   renderTree();
-  renderStrip();
+  renderTodayLeaves(was ? null : key);
+}
+
+const LEAF_ICON_SVG = `<path d="M4 20C4 12 9 4 20 4C20 14 13 20 4 20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M4 20C8 16 12 12 18 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`;
+
+function renderTodayLeaves(justToggledKey){
+  const wrap = document.getElementById("todayLeaves");
+  wrap.innerHTML = PRAYERS.map(p=>{
+    const done = !!todayRecord[p.key];
+    return `<div class="today-leaf${done?' done':''}" id="leaf-${p.key}" title="${p.label}"><svg viewBox="0 0 24 24">${LEAF_ICON_SVG}</svg></div>`;
+  }).join("");
+  if (justToggledKey){
+    const el = document.getElementById(`leaf-${justToggledKey}`);
+    if (el){
+      el.classList.add("pop");
+      el.addEventListener("animationend", ()=> el.classList.remove("pop"), { once:true });
+    }
+  }
 }
 
 function renderList(){
@@ -366,9 +395,12 @@ function renderList(){
   list.innerHTML = PRAYERS.map(p=>{
     const done = !!todayRecord[p.key];
     return `<div class="row" onclick="togglePrayer('${p.key}')">
-      <div class="row-left">
+      <div class="row-icon">
+        <img src="${PRAYER_ICON_FILES[p.key]}" alt="${p.label}" />
+      </div>
+      <div class="row-mid">
         <div class="row-name">${p.label}</div>
-        <div class="row-sub">${done ? "Bajardim" : "Bajarmadim"}</div>
+        <div class="row-sub">${done ? "Bajarildi" : "Bajarilmadi"}</div>
       </div>
       <div class="check${done?' done':''}">
         <svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="#10142a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -376,30 +408,6 @@ function renderList(){
     </div>`;
   }).join("");
   reward.style.display = todayDoneCount()===PRAYERS.length ? "block" : "none";
-}
-
-function dotClassFor(d,i){
-  if (i > elapsedCount && d !== todayStr) return "future";
-  const s = d===todayStr ? todayDoneCount()/PRAYERS.length : (scores[d] ?? 0);
-  if (s >= 1) return "full";
-  if (s > 0) return "partial";
-  return "missed";
-}
-
-function renderStrip(){
-  const strip = document.getElementById("strip");
-  strip.innerHTML = cycleDates.map((d,i)=>{
-    const cls = dotClassFor(d,i) + (d===todayStr ? " iscurrent" : "");
-    return `<div class="dot ${cls}" title="${displayDate(d)}" onclick="peekDay('${d}')"></div>`;
-  }).join("");
-  renderPeek();
-}
-function peekDay(d){ peekDate = d; renderPeek(); }
-function renderPeek(){
-  const el = document.getElementById("peek");
-  if (!peekDate){ el.textContent = ""; return; }
-  const n = peekDate===todayStr ? todayDoneCount() : Math.round((scores[peekDate]??0)*5);
-  el.textContent = `${displayDate(peekDate)}: ${n}/5 namoz bajarilgan`;
 }
 
 function renderFinish(){
@@ -430,7 +438,7 @@ function startNewCycle(){
 function renderAll(){
   renderList();
   renderTree();
-  renderStrip();
+  renderTodayLeaves();
   renderFinish();
 }
 

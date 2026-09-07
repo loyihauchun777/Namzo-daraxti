@@ -18,7 +18,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 16px 10px;
+    padding: 6px 16px 6px;
     -webkit-tap-highlight-color: transparent;
     overflow: hidden;
   }
@@ -30,7 +30,7 @@
   .daycount { font-size: 11.5px; letter-spacing: 0.01em; color: #A8AFC2; margin-bottom: 0; line-height: 1.25; }
   .daycount b { color: #6FA352; font-weight: 700; }
   .title { display: none; }
-  .sky-stage { position: relative; width: 100%; max-width: 260px; height: 226px; margin: 0 auto; flex-shrink: 0; }
+  .sky-stage { position: relative; width: 100%; max-width: 260px; height: 196px; margin: 0 auto; flex-shrink: 0; }
   .clouds { position: absolute; top: 0; left: 0; width: 100%; height: 60px; pointer-events: none; }
   .cloud { position: absolute; }
   .cloud svg { display: block; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.28)); }
@@ -47,7 +47,7 @@
   }
   @keyframes rainfall { 0% { transform: translateY(0); opacity: 0.9; } 100% { transform: translateY(115px); opacity: 0; } }
   .tree-wrap {
-    position: relative; width: 172px; max-width: 58vw; margin: 22px auto 0;
+    position: relative; width: 172px; max-width: 58vw; margin: 12px auto 0;
     transform-origin: 50% 100%;
     transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
   }
@@ -130,19 +130,19 @@
   .progress-count { font-size: 12px; font-weight: 700; color: #F1EDE3; white-space: nowrap; text-align: right; line-height: 1.2; }
   .progress-count span { display: block; font-size: 9.5px; font-weight: 500; color: #8B93AB; }
   .location-pill {
-    width: 100%; max-width: 360px; display: flex; align-items: center; gap: 8px;
+    width: 100%; max-width: 360px; display: flex; align-items: center; gap: 6px;
     background: rgba(255,255,255,0.045); border: 1px solid rgba(241,237,227,0.08);
-    border-radius: 999px; padding: 6px 12px; margin: 0 0 6px; flex-shrink: 0;
+    border-radius: 999px; padding: 4px 12px; margin: 0 0 4px; flex-shrink: 0;
     position: relative;
   }
-  .location-pill svg { width: 15px; height: 15px; flex-shrink: 0; color: #E3A857; }
+  .location-pill svg { width: 13px; height: 13px; flex-shrink: 0; color: #E3A857; }
   .location-pill select {
     flex: 1; appearance: none; -webkit-appearance: none; background: transparent;
-    border: none; outline: none; color: #F1EDE3; font-size: 12px; font-weight: 600;
-    font-family: inherit; padding-right: 14px;
+    border: none; outline: none; color: #F1EDE3; font-size: 11.5px; font-weight: 600;
+    font-family: inherit; padding: 2px 14px 2px 0;
   }
   .location-pill select option { background: #1c2440; color: #F1EDE3; }
-  .location-pill .chev { position: absolute; right: 12px; width: 11px; height: 11px; color: #8B93AB; pointer-events: none; }
+  .location-pill .chev { position: absolute; right: 12px; width: 10px; height: 10px; color: #8B93AB; pointer-events: none; }
   .day-track-wrap { position: relative; width: 100%; max-width: 360px; margin: 6px 0; flex-shrink: 0; }
   .day-track { display: flex; gap: 8px; overflow-x: auto; padding: 4px 6px; scrollbar-width: none; }
   .day-track::-webkit-scrollbar { display: none; }
@@ -344,8 +344,6 @@
     <div class="nav-item" id="navStats" onclick="switchPage('stats')"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V11M12 19V5M19 19V14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div>
   </div>
 
-<!-- Namoz vaqtlarini offline (API'siz) hisoblaydigan kutubxona: lat/lng + sanadan astronomik hisoblash -->
-<script src="https://cdn.jsdelivr.net/npm/adhan@4.4.3/lib/adhan.min.js"></script>
 <script>
 const PRAYERS = [
   { key: "bomdod", label: "Bomdod" },
@@ -387,12 +385,66 @@ let userLoc = (()=>{
 let prayerTimesToday = null;
 
 function computePrayerTimes(){
-  if (typeof adhan === "undefined") return null;
   try {
-    const coords = new adhan.Coordinates(userLoc.lat, userLoc.lng);
-    const params = adhan.CalculationMethod.MuslimWorldLeague();
-    params.madhab = adhan.Madhab.Hanafi; // O'zbekistonda Hanafiy mazhab - Asr vaqti shunga mos hisoblanadi
-    return new adhan.PrayerTimes(coords, new Date(), params);
+    const now = new Date();
+    // Kun boshi (mahalliy vaqt zonasida yarim tunning UTC muqobili)
+    const midnightUTC = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    const tzOffsetHours = -now.getTimezoneOffset() / 60; // qurilma vaqt zonasi (masalan UZT = +5)
+
+    // Julian sana (UTC kun o'rtasi, quyosh holatini hisoblash uchun)
+    const jd = Math.floor((midnightUTC / 86400000) + 2440587.5) + 0.5;
+    const D = jd - 2451545.0;
+
+    const toRad = (x)=> x * Math.PI / 180;
+    const toDeg = (x)=> x * 180 / Math.PI;
+    const fixHour = (h)=> { h = h % 24; return h < 0 ? h + 24 : h; };
+
+    const g = (357.529 + 0.98560028 * D) % 360;
+    const q = (280.459 + 0.98564736 * D) % 360;
+    const L = (q + 1.915 * Math.sin(toRad(g)) + 0.020 * Math.sin(toRad(2 * g))) % 360;
+    const e = 23.439 - 0.00000036 * D;
+    let RA = toDeg(Math.atan2(Math.cos(toRad(e)) * Math.sin(toRad(L)), Math.cos(toRad(L)))) / 15;
+    RA = fixHour(RA);
+    const eqt = q / 15 - RA;
+    const decl = toDeg(Math.asin(Math.sin(toRad(e)) * Math.sin(toRad(L))));
+
+    const lat = userLoc.lat, lng = userLoc.lng;
+    const latR = toRad(lat), declR = toRad(decl);
+
+    function hourAngle(angle){
+      // angle = ufqdan pastdagi chuqurlik (musbat son); quyosh balandligi = -angle
+      const angleR = toRad(angle);
+      let cosH = (-Math.sin(angleR) - Math.sin(latR) * Math.sin(declR)) / (Math.cos(latR) * Math.cos(declR));
+      cosH = Math.max(-1, Math.min(1, cosH));
+      return toDeg(Math.acos(cosH)) / 15;
+    }
+    function asrHourAngle(shadowFactor){
+      const a = toDeg(Math.atan(1 / (shadowFactor + Math.tan(Math.abs(latR - declR)))));
+      return hourAngle(-a);
+    }
+
+    // Quyosh tush chizig'idan (mintaqaviy peshin nuqtasi) UTC soatlarda
+    const dhuhrUTC = 12 - eqt - lng / 15;
+    const fajrUTC = dhuhrUTC - hourAngle(18);        // MWL: Bomdod -18 daraja
+    const maghribUTC = dhuhrUTC + hourAngle(0.833);  // Quyosh botishi
+    const ishaUTC = dhuhrUTC + hourAngle(17);        // MWL: Xufton -17 daraja
+    const asrUTC = dhuhrUTC + asrHourAngle(2);       // Hanafiy mazhab: soya nisbati 2
+
+    function toDate(hoursUTC){
+      // hoursUTC manfiy yoki 24 dan katta bo'lishi mumkin (masalan Bomdod
+      // ba'zan UTC yarim tunidan oldingi soatga to'g'ri keladi) - Date bu
+      // holatni to'g'ri kun chegarasiga o'zi moslab qo'yadi.
+      return new Date(midnightUTC + hoursUTC * 3600000);
+    }
+
+    return {
+      fajr: toDate(fajrUTC),
+      dhuhr: toDate(dhuhrUTC + 1/60), // 1 daqiqalik ehtiyot vaqti
+      asr: toDate(asrUTC),
+      maghrib: toDate(maghribUTC),
+      isha: toDate(ishaUTC),
+      _tzOffsetHours: tzOffsetHours,
+    };
   } catch(e){ return null; }
 }
 

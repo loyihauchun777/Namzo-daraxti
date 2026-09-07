@@ -230,11 +230,24 @@
   .day-row .d.is-today { color: #F1EDE3; font-weight: 700; }
   .day-row .bar-track { flex: 1; height: 7px; border-radius: 999px; background: rgba(241,237,227,0.12); overflow: hidden; }
   .day-row .bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#6FA352,#8FB86A); }
+  .bg-video {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; z-index: -2;
+  }
+  .bg-overlay {
+    position: fixed; inset: 0; z-index: -1;
+    background: linear-gradient(180deg, rgba(10,13,28,0.55) 0%, rgba(10,13,28,0.35) 45%, rgba(10,13,28,0.72) 100%);
+  }
   .day-row .n { font-size: 11.5px; color: #8B93AB; width: 30px; text-align: right; flex-shrink: 0; }
   .empty-note { text-align: center; font-size: 12px; color: #8B93AB; padding: 20px 10px; }
 </style>
 </head>
 <body>
+
+  <video class="bg-video" autoplay muted loop playsinline>
+    <source src="bg-video.mp4" type="video/mp4">
+  </video>
+  <div class="bg-overlay"></div>
 
   <div class="topbar">
     <svg viewBox="0 0 24 24" fill="none" onclick="history.back()"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>

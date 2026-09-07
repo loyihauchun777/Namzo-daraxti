@@ -30,7 +30,7 @@
   .daycount { font-size: 11.5px; letter-spacing: 0.01em; color: #A8AFC2; margin-bottom: 0; line-height: 1.25; }
   .daycount b { color: #6FA352; font-weight: 700; }
   .title { display: none; }
-  .sky-stage { position: relative; width: 100%; max-width: 260px; height: 198px; margin: 0 auto; flex-shrink: 0; }
+  .sky-stage { position: relative; width: 100%; max-width: 260px; height: 214px; margin: 0 auto; flex-shrink: 0; }
   .clouds { position: absolute; top: 0; left: 0; width: 100%; height: 60px; pointer-events: none; }
   .cloud { position: absolute; }
   .cloud svg { display: block; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.28)); }
@@ -47,7 +47,7 @@
   }
   @keyframes rainfall { 0% { transform: translateY(0); opacity: 0.9; } 100% { transform: translateY(115px); opacity: 0; } }
   .tree-wrap {
-    position: relative; width: 172px; max-width: 58vw; margin: 8px auto 0;
+    position: relative; width: 172px; max-width: 58vw; margin: 22px auto 0;
     transform-origin: 50% 100%;
     transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
   }
@@ -172,9 +172,31 @@
     display: flex; align-items: center; justify-content: space-around;
     padding: 9px 0; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
   }
-  .bottom-nav .nav-item { display: flex; align-items: center; justify-content: center; padding: 3px 18px; color: #8B93AB; }
+  .bottom-nav .nav-item { display: flex; align-items: center; justify-content: center; padding: 3px 18px; color: #8B93AB; cursor: pointer; }
   .bottom-nav .nav-item svg { width: 20px; height: 20px; }
   .bottom-nav .nav-item.active { color: #6FA352; }
+
+  .page { display: flex; flex-direction: column; align-items: center; width: 100%; flex: 1; min-height: 0; }
+  .page-scroll { width: 100%; max-width: 380px; flex: 1; min-height: 0; overflow-y: auto; margin: 6px auto 0; -webkit-overflow-scrolling: touch; }
+  .page-title { text-align: center; margin-bottom: 8px; flex-shrink: 0; }
+  .page-title .t { font-size: 16px; font-weight: 700; color: #F1EDE3; }
+  .page-title .s { font-size: 11.5px; color: #A8AFC2; margin-top: 2px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 2px 10px; }
+  .stat-card {
+    background: rgba(255,255,255,0.045); border: 1px solid rgba(241,237,227,0.08);
+    border-radius: 14px; padding: 12px 10px; text-align: center;
+  }
+  .stat-card .v { font-size: 20px; font-weight: 700; color: #6FA352; line-height: 1.2; }
+  .stat-card .l { font-size: 10.5px; color: #8B93AB; margin-top: 2px; }
+  .day-list { background: rgba(255,255,255,0.03); border: 1px solid rgba(241,237,227,0.07); border-radius: 16px; padding: 0 14px; margin: 0 2px; }
+  .day-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(241,237,227,0.07); }
+  .day-row:last-child { border-bottom: none; }
+  .day-row .d { font-size: 12.5px; color: #C9CEDD; width: 68px; flex-shrink: 0; }
+  .day-row .d.is-today { color: #F1EDE3; font-weight: 700; }
+  .day-row .bar-track { flex: 1; height: 7px; border-radius: 999px; background: rgba(241,237,227,0.12); overflow: hidden; }
+  .day-row .bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg,#6FA352,#8FB86A); }
+  .day-row .n { font-size: 11.5px; color: #8B93AB; width: 30px; text-align: right; flex-shrink: 0; }
+  .empty-note { text-align: center; font-size: 12px; color: #8B93AB; padding: 20px 10px; }
 </style>
 </head>
 <body>
@@ -185,6 +207,7 @@
     <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
   </div>
 
+  <div class="page" id="pageTree">
   <div class="header">
     <svg class="leaf-badge" viewBox="0 0 24 24" fill="none"><path d="M4 20C4 12 9 4 20 4C20 14 13 20 4 20Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M4 20C8 16 12 12 18 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
     <div class="daycount">Har bir namoz &ndash;<br/><b>daraxtingizning yangi shoxchasi</b></div>
@@ -252,11 +275,32 @@
     <p id="finishText"></p>
     <button class="btn" onclick="startNewCycle()">Yangi sikl boshlash</button>
   </div>
+  </div>
+
+  <div class="page" id="pageHome" style="display:none;">
+    <div class="page-title">
+      <div class="t">Umumiy holat</div>
+      <div class="s" id="homeSubtitle"></div>
+    </div>
+    <div class="page-scroll">
+      <div class="stat-grid" id="homeStats"></div>
+    </div>
+  </div>
+
+  <div class="page" id="pageStats" style="display:none;">
+    <div class="page-title">
+      <div class="t">Statistika</div>
+      <div class="s">Sikl davomidagi kunlar bo'yicha natija</div>
+    </div>
+    <div class="page-scroll">
+      <div class="day-list" id="dayList"></div>
+    </div>
+  </div>
 
   <div class="bottom-nav">
-    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4L20 11M6 10V20H18V10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20C4 12 9 4 20 4C20 14 13 20 4 20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M4 20C8 16 12 12 18 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V11M12 19V5M19 19V14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div>
+    <div class="nav-item" id="navHome" onclick="switchPage('home')"><svg viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4L20 11M6 10V20H18V10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="nav-item active" id="navTree" onclick="switchPage('tree')"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20C4 12 9 4 20 4C20 14 13 20 4 20Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M4 20C8 16 12 12 18 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    <div class="nav-item" id="navStats" onclick="switchPage('stats')"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V11M12 19V5M19 19V14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div>
   </div>
 
 <script>
@@ -322,7 +366,8 @@ const LEAF_TUFT = `<path d="M0 8C0 3.5 3.5 0 9 0C9 4.5 5.5 8 0 8Z" />`;
 function leafTuft(x, y, scale, rot, fill){
   return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${scale})">
     <g fill="${fill}">${LEAF_TUFT}</g>
-    <g fill="#ffffff" opacity="0.35" style="mix-blend-mode:soft-light" transform="translate(1.2,1) scale(0.6)">${LEAF_TUFT}</g>
+    <path d="M0.5 7C1.5 4.5 3.5 2 8 0.6" stroke="#000000" stroke-width="0.5" stroke-linecap="round" fill="none" opacity="0.18"/>
+    <g fill="#ffffff" opacity="0.32" style="mix-blend-mode:soft-light" transform="translate(1.2,1) scale(0.6)">${LEAF_TUFT}</g>
   </g>`;
 }
 
@@ -330,6 +375,13 @@ function trunkGrad(id){
   return `<linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0">
     <stop offset="0%" stop-color="#6B4A30"/><stop offset="45%" stop-color="#8F6E48"/><stop offset="100%" stop-color="#573C26"/>
   </linearGradient>`;
+}
+
+// A couple of faint parallel bark-groove strokes drawn alongside a trunk path,
+// to break up the flat gradient fill with subtle cylindrical shading.
+function barkTexture(d, offset){
+  return `<path d="${d}" stroke="#3E2A18" stroke-width="1" stroke-linecap="round" fill="none" opacity="0.28" transform="translate(${-offset},0)"/>
+    <path d="${d}" stroke="#B99368" stroke-width="0.8" stroke-linecap="round" fill="none" opacity="0.22" transform="translate(${offset*0.6},0)"/>`;
 }
 
 function groundMound(id, cx, cy, rx, ry){
@@ -353,28 +405,62 @@ function pebble(x, y, r, rot, tone){
   </g>`;
 }
 
+function hexBlend(hex1, hex2, t){
+  const c1 = parseInt(hex1.slice(1),16), c2 = parseInt(hex2.slice(1),16);
+  const r1=(c1>>16)&255, g1=(c1>>8)&255, b1=c1&255;
+  const r2=(c2>>16)&255, g2=(c2>>8)&255, b2=c2&255;
+  const r=Math.round(r1+(r2-r1)*t), g=Math.round(g1+(g2-g1)*t), b=Math.round(b1+(b2-b1)*t);
+  return `#${((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1)}`;
+}
+
+// A single soft, rounded canopy silhouette (like an actual treetop) with
+// gentle sphere-like shading, a mottled texture clipped inside it for leaf
+// variation, and a fringe of small individual leaves around the rim so the
+// outline reads as foliage rather than a smooth geometric blob.
 function canopyCluster(id, cx, cy, spread, count, fillA, fillB){
-  // fillA = light facet, fillB = dark facet; mid tone is blended between them.
-  const mid = fillA; // base fill under the facets
+  const light = hexBlend(fillA, '#ffffff', 0.3);
+  const dark = fillB;
+  const rx = spread*0.52, ry = rx*0.8;
   const rand = (seed)=> { const x = Math.sin(seed*999)*10000; return x - Math.floor(x); };
-  let defs = "";
-  let blobs = "";
-  for (let i=0;i<count;i++){
-    const t = i/(count-1||1);
-    const dx = (t-0.5)*spread;
-    const dy = -Math.abs(dx)*0.35 + rand(i+1)*8 - 4;
-    const rx = spread*0.24 * (0.8 + rand(i+7)*0.4);
-    const ry = rx*0.85;
-    const bx = cx+dx, by = cy+dy;
-    const clipId = `${id}c${i}`;
-    defs += `<clipPath id="${clipId}"><ellipse cx="${bx}" cy="${by}" rx="${rx}" ry="${ry}"/></clipPath>`;
-    blobs += `<g clip-path="url(#${clipId})">
-      <rect x="${bx-rx}" y="${by-ry}" width="${rx*2}" height="${ry*2}" fill="${mid}"/>
-      <polygon points="${bx-rx},${by-ry} ${bx+rx*0.35},${by-ry} ${bx-rx},${by+ry*0.35}" fill="#ffffff" opacity="0.32"/>
-      <polygon points="${bx+rx},${by+ry} ${bx-rx*0.3},${by+ry} ${bx+rx},${by-ry*0.3}" fill="${fillB}" opacity="0.85"/>
-    </g>`;
+  const gradId = `${id}main`, clipId = `${id}clip`, blurId = `${id}blur`;
+
+  let texture = "";
+  const texCount = Math.round(count*2.2);
+  for (let i=0;i<texCount;i++){
+    const ang = rand(i*3+1)*Math.PI*2;
+    const rad = Math.sqrt(rand(i*3+2))*0.85;
+    const bx = cx + Math.cos(ang)*rx*rad;
+    const by = cy + Math.sin(ang)*ry*rad;
+    const r = rx*0.16*(0.6+rand(i*3+3)*0.6);
+    const tone = rand(i*3+4) > 0.5 ? light : dark;
+    texture += `<circle cx="${bx.toFixed(1)}" cy="${by.toFixed(1)}" r="${r.toFixed(1)}" fill="${tone}" opacity="0.26"/>`;
   }
-  return `<defs>${defs}</defs><g>${blobs}</g>`;
+
+  let fringe = "";
+  const fringeCount = Math.round(count*1.6);
+  for (let i=0;i<fringeCount;i++){
+    const ang = -Math.PI*0.92 + (i/(fringeCount-1 || 1)) * Math.PI*1.84;
+    const bx = cx + Math.cos(ang)*rx*0.98;
+    const by = cy + Math.sin(ang)*ry*0.98;
+    const rot = (ang*180/Math.PI) + 90 + (rand(i+50)-0.5)*30;
+    const scale = 0.55 + rand(i+60)*0.35;
+    const tone = rand(i+70) > 0.5 ? fillA : dark;
+    fringe += leafTuft(bx, by, scale, rot, tone);
+  }
+
+  return `<defs>
+    <radialGradient id="${gradId}" cx="34%" cy="28%" r="80%">
+      <stop offset="0%" stop-color="${light}"/>
+      <stop offset="55%" stop-color="${fillA}"/>
+      <stop offset="100%" stop-color="${dark}"/>
+    </radialGradient>
+    <clipPath id="${clipId}"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}"/></clipPath>
+    <filter id="${blurId}" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <ellipse cx="${cx+3}" cy="${cy+9}" rx="${(rx*0.96).toFixed(1)}" ry="${(ry*0.9).toFixed(1)}" fill="${dark}" opacity="0.35" filter="url(#${blurId})"/>
+  <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#${gradId})"/>
+  <g clip-path="url(#${clipId})">${texture}</g>
+  <g>${fringe}</g>`;
 }
 
 function leafAccents(cx, cy, spread, count, seed, fill){
@@ -439,6 +525,7 @@ const TREE_STAGES = [
     ${pebble(164,251,3.2,25,'warm')}
     ${pebble(120,254,2.4,5,'cool')}
     <path d="M120 244C117 211 119 181 122 158" stroke="url(#trunk2)" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+    ${barkTexture("M120 244C117 211 119 181 122 158", 1.3)}
     <path d="M120 211C108 204 100 200 92 198" stroke="url(#trunk2)" stroke-width="3" stroke-linecap="round" fill="none"/>
     <path d="M121 196C133 188 141 184 149 182" stroke="url(#trunk2)" stroke-width="3" stroke-linecap="round" fill="none"/>
     ${twigCascade(SAPLING_TWIGS, count, '#8F6E48')}
@@ -455,11 +542,11 @@ const TREE_STAGES = [
     ${pebble(172,253,3.6,22,'warm')}
     ${pebble(115,257,2.8,8,'cool')}
     <path d="M120 244C117 211 118 171 120 134" stroke="url(#trunk3)" stroke-width="8" stroke-linecap="round" fill="none"/>
+    ${barkTexture("M120 244C117 211 118 171 120 134", 2)}
     <path d="M119 181C104 171 92 166 80 163" stroke="url(#trunk3)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
     <path d="M121 174C136 163 149 158 162 155" stroke="url(#trunk3)" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-    <g opacity="0.55" transform="translate(0,8)">${canopyCluster('canopyG3s',120,116,110,5,'#4C7238','#3C5C2C')}</g>
-    ${canopyCluster('canopyG3',120,116,120,7,'#8FB86A','#5C8F44')}
-    ${leafAccents(120,110,130,7,3,'#A9D988')}
+    ${canopyCluster('canopyG3',120,116,120,7,'#8FB86A','#4C7238')}
+    ${leafAccents(120,110,130,11,3,'#A9D988')}
   </svg>`,
   // Stage 4: full tree
   ()=>`<svg viewBox="0 0 240 260" xmlns="http://www.w3.org/2000/svg">
@@ -470,11 +557,11 @@ const TREE_STAGES = [
     ${pebble(108,258,3.0,10,'cool')}
     ${pebble(146,257,2.6,-8,'warm')}
     <path d="M120 244C117 206 118 161 120 114" stroke="url(#trunk4)" stroke-width="11" stroke-linecap="round" fill="none"/>
+    ${barkTexture("M120 244C117 206 118 161 120 114", 2.6)}
     <path d="M118 166C98 154 82 148 66 144" stroke="url(#trunk4)" stroke-width="6" stroke-linecap="round" fill="none"/>
     <path d="M122 156C142 143 158 136 176 132" stroke="url(#trunk4)" stroke-width="6" stroke-linecap="round" fill="none"/>
-    <g opacity="0.5" transform="translate(0,10)">${canopyCluster('canopyG4s',120,92,168,8,'#42632F','#33502B')}</g>
-    ${canopyCluster('canopyG4',120,90,168,8,'#9BCB74','#557F3D')}
-    ${leafAccents(120,80,180,10,7,'#B7E28C')}
+    ${canopyCluster('canopyG4',120,98,148,8,'#9BCB74','#42632F')}
+    ${leafAccents(120,90,158,15,7,'#B7E28C')}
   </svg>`,
   // Stage 5: bloom / fruit
   ()=>`<svg viewBox="0 0 240 260" xmlns="http://www.w3.org/2000/svg">
@@ -485,24 +572,37 @@ const TREE_STAGES = [
     ${pebble(104,259,3.2,10,'cool')}
     ${pebble(148,258,2.8,-8,'warm')}
     <path d="M120 244C117 206 118 161 120 114" stroke="url(#trunk5)" stroke-width="11" stroke-linecap="round" fill="none"/>
+    ${barkTexture("M120 244C117 206 118 161 120 114", 2.6)}
     <path d="M118 166C98 154 82 148 66 144" stroke="url(#trunk5)" stroke-width="6" stroke-linecap="round" fill="none"/>
     <path d="M122 156C142 143 158 136 176 132" stroke="url(#trunk5)" stroke-width="6" stroke-linecap="round" fill="none"/>
-    <g opacity="0.5" transform="translate(0,10)">${canopyCluster('canopyG5s',120,92,172,9,'#42632F','#33502B')}</g>
-    ${canopyCluster('canopyG5',120,90,172,9,'#A9D988','#5C8F44')}
-    ${leafAccents(120,80,184,10,9,'#C4EDA0')}
-    <circle cx="88" cy="84" r="5.5" fill="#F2C879"/>
-    <circle cx="150" cy="72" r="5.5" fill="#F2C879"/>
-    <circle cx="120" cy="106" r="5.5" fill="#F2C879"/>
-    <circle cx="164" cy="102" r="5" fill="#F2C879"/>
-    <circle cx="98" cy="114" r="5" fill="#F2C879"/>
-    <circle cx="140" cy="118" r="4.5" fill="#F2C879"/>
+    ${canopyCluster('canopyG5',120,98,150,9,'#A9D988','#3E5C2C')}
+    ${leafAccents(120,90,160,15,9,'#C4EDA0')}
+    <circle cx="88" cy="92" r="5.5" fill="#F2C879"/>
+    <circle cx="150" cy="80" r="5.5" fill="#F2C879"/>
+    <circle cx="120" cy="114" r="5.5" fill="#F2C879"/>
+    <circle cx="164" cy="110" r="5" fill="#F2C879"/>
+    <circle cx="98" cy="122" r="5" fill="#F2C879"/>
+    <circle cx="140" cy="126" r="4.5" fill="#F2C879"/>
   </svg>`,
 ];
 
+// Cumulative prayers completed so far this cycle (all elapsed days + today),
+// not just today's count -- so the tree's extra "puffiness" accumulates over
+// the cycle instead of collapsing back to baseline every time a new day starts.
+function cumulativeDoneCount(){
+  let sum = 0;
+  cycleDates.forEach((d,i)=>{
+    if (i > elapsedCount && d !== todayStr) return;
+    sum += (scores[d] ?? 0) * PRAYERS.length;
+  });
+  return sum;
+}
+
 function updateGrowthScale(){
   const wrap = document.getElementById("treeWrap");
-  const c = todayDoneCount();
-  const scale = 1 + c * 0.045;
+  const days = elapsedCount + 1;
+  const avgFraction = cumulativeDoneCount() / (PRAYERS.length * days); // 0..1 average consistency so far
+  const scale = 1 + avgFraction * 0.14; // gentle puff-up, capped low enough to stay clear of the clouds
   wrap.style.transform = `scaleY(${scale.toFixed(3)})`;
 }
 
@@ -722,11 +822,58 @@ function startNewCycle(){
   renderAll();
 }
 
+function switchPage(name){
+  const pages = { tree: "pageTree", home: "pageHome", stats: "pageStats" };
+  Object.entries(pages).forEach(([key, id])=>{
+    document.getElementById(id).style.display = key === name ? "flex" : "none";
+  });
+  document.getElementById("navTree").classList.toggle("active", name === "tree");
+  document.getElementById("navHome").classList.toggle("active", name === "home");
+  document.getElementById("navStats").classList.toggle("active", name === "stats");
+  if (name === "home") renderHome();
+  if (name === "stats") renderStats();
+}
+
+function renderHome(){
+  const grid = document.getElementById("homeStats");
+  const sub = document.getElementById("homeSubtitle");
+  const prog = overallProgress();
+  const doneToday = todayDoneCount();
+  const perfectDays = cycleDates.slice(0, elapsedCount+1).filter(d => (scores[d] ?? 0) === 1).length;
+  const totalDone = Math.round(cumulativeDoneCount());
+  sub.textContent = cycleFinished ? "Sikl yakunlandi" : `${Math.min(dayIndex+1, CYCLE_LEN)}-kun / ${CYCLE_LEN}`;
+  grid.innerHTML = `
+    <div class="stat-card"><div class="v">${Math.round(prog*100)}%</div><div class="l">Umumiy progress</div></div>
+    <div class="stat-card"><div class="v">${doneToday}/${PRAYERS.length}</div><div class="l">Bugungi namozlar</div></div>
+    <div class="stat-card"><div class="v">${perfectDays}</div><div class="l">To'liq bajarilgan kunlar</div></div>
+    <div class="stat-card"><div class="v">${totalDone}</div><div class="l">Jami bajarilgan namoz</div></div>
+  `;
+}
+
+function renderStats(){
+  const list = document.getElementById("dayList");
+  const days = cycleDates.slice(0, elapsedCount+1);
+  if (!days.length){ list.innerHTML = `<div class="empty-note">Hali ma'lumot yo'q</div>`; return; }
+  list.innerHTML = days.map(d=>{
+    const score = scores[d] ?? 0;
+    const n = Math.round(score * PRAYERS.length);
+    const pct = Math.round(score*100);
+    const isToday = d === todayStr;
+    return `<div class="day-row">
+      <div class="d${isToday ? ' is-today' : ''}">${displayDate(d)}${isToday ? " (bugun)" : ""}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+      <div class="n">${n}/${PRAYERS.length}</div>
+    </div>`;
+  }).reverse().join("");
+}
+
 function renderAll(){
   renderList();
   renderTree();
   renderTodayLeaves();
   renderFinish();
+  renderHome();
+  renderStats();
 }
 
 renderAll();

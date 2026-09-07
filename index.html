@@ -304,6 +304,7 @@
     </div>
     <div class="page-scroll">
       <div class="stat-grid" id="homeStats"></div>
+      <button class="btn" id="resetBtn" style="display:block; margin:8px auto 0; background:rgba(226,90,90,0.16); color:#E77; border:1px solid rgba(226,90,90,0.4);" onclick="resetStats()">Statistikani 0 dan boshlash</button>
     </div>
   </div>
 
@@ -932,6 +933,14 @@ function renderFinish(){
   document.getElementById("finishText").textContent = prog >= 0.85
     ? "30 kunlik sikl davomida daraxtingiz to'liq o'sib, mevaga kirdi. Yangi sikl bilan davom eting."
     : "30 kunlik sikl yakunlandi. Daraxt ushbu davrdagi bajarilgan namozlar asosida o'sdi. Yangi sikldan yana boshlashingiz mumkin.";
+}
+
+function resetStats(){
+  const ok = confirm("Haqiqatan ham statistikani 0 dan boshlaysizmi? Barcha tarix o'chiriladi va bu amalni ortga qaytarib bo'lmaydi.");
+  if (!ok) return;
+  Object.keys(localStorage).forEach(k=>{ if (k.startsWith("day:")) localStorage.removeItem(k); });
+  startNewCycle();
+  switchPage("tree");
 }
 
 function startNewCycle(){

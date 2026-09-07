@@ -129,6 +129,20 @@
   .progress-fill { height: 100%; background: linear-gradient(90deg,#6FA352,#8FB86A); border-radius: 999px; transition: width 0.3s ease; }
   .progress-count { font-size: 12px; font-weight: 700; color: #F1EDE3; white-space: nowrap; text-align: right; line-height: 1.2; }
   .progress-count span { display: block; font-size: 9.5px; font-weight: 500; color: #8B93AB; }
+  .location-pill {
+    width: 100%; max-width: 360px; display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.045); border: 1px solid rgba(241,237,227,0.08);
+    border-radius: 999px; padding: 6px 12px; margin: 0 0 6px; flex-shrink: 0;
+    position: relative;
+  }
+  .location-pill svg { width: 15px; height: 15px; flex-shrink: 0; color: #E3A857; }
+  .location-pill select {
+    flex: 1; appearance: none; -webkit-appearance: none; background: transparent;
+    border: none; outline: none; color: #F1EDE3; font-size: 12px; font-weight: 600;
+    font-family: inherit; padding-right: 14px;
+  }
+  .location-pill select option { background: #1c2440; color: #F1EDE3; }
+  .location-pill .chev { position: absolute; right: 12px; width: 11px; height: 11px; color: #8B93AB; pointer-events: none; }
   .day-track-wrap { position: relative; width: 100%; max-width: 360px; margin: 6px 0; flex-shrink: 0; }
   .day-track { display: flex; gap: 8px; overflow-x: auto; padding: 4px 6px; scrollbar-width: none; }
   .day-track::-webkit-scrollbar { display: none; }
@@ -281,6 +295,12 @@
 
   <div class="today-leaves" id="todayLeaves"></div>
 
+  <div class="location-pill" id="locationPill">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 21C12 21 19 14.5 19 9.5C19 5.4 15.6 2 12 2C8.4 2 5 5.4 5 9.5C5 14.5 12 21 12 21Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.7"/></svg>
+    <select id="citySelect" onchange="onCityChange(this.value)"></select>
+    <svg class="chev" viewBox="0 0 24 24" fill="none"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+
   <div class="day-track-wrap">
     <div class="day-peek" id="dayPeek"></div>
     <div class="day-track" id="dayTrack"></div>
@@ -324,6 +344,8 @@
     <div class="nav-item" id="navStats" onclick="switchPage('stats')"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V11M12 19V5M19 19V14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></div>
   </div>
 
+<!-- Namoz vaqtlarini offline (API'siz) hisoblaydigan kutubxona: lat/lng + sanadan astronomik hisoblash -->
+<script src="https://cdn.jsdelivr.net/npm/adhan@4.4.3/lib/adhan.min.js"></script>
 <script>
 const PRAYERS = [
   { key: "bomdod", label: "Bomdod" },
@@ -334,6 +356,98 @@ const PRAYERS = [
 ];
 const CYCLE_LEN = 30;
 const EMPTY_RECORD = { bomdod:false, peshin:false, asr:false, shom:false, xufton:false };
+
+// ---- Namoz vaqtlari (API'siz, offline astronomik hisoblash - adhan.js) ----
+// Standart: GPS orqali joriy joylashuv. Ruxsat berilmasa yoki foydalanuvchi
+// qo'lda tanlasa, quyidagi shaharlar ro'yxatidan koordinata olinadi.
+const CITIES = [
+  { id: "auto",      name: "Joriy joylashuv (GPS)", lat: null,     lng: null },
+  { id: "tashkent",  name: "Toshkent",   lat: 41.2995, lng: 69.2401 },
+  { id: "samarkand", name: "Samarqand",  lat: 39.6542, lng: 66.9597 },
+  { id: "bukhara",   name: "Buxoro",     lat: 39.7747, lng: 64.4286 },
+  { id: "andijan",   name: "Andijon",    lat: 40.7821, lng: 72.3442 },
+  { id: "namangan",  name: "Namangan",   lat: 41.0011, lng: 71.6725 },
+  { id: "fergana",   name: "Farg'ona",   lat: 40.3842, lng: 71.7843 },
+  { id: "qarshi",    name: "Qarshi",     lat: 38.8606, lng: 65.7891 },
+  { id: "nukus",     name: "Nukus",      lat: 42.4531, lng: 59.6103 },
+  { id: "urgench",   name: "Urganch",    lat: 41.5506, lng: 60.6317 },
+  { id: "termez",    name: "Termiz",     lat: 37.2242, lng: 67.2783 },
+  { id: "jizzakh",   name: "Jizzax",     lat: 40.1158, lng: 67.8422 },
+  { id: "gulistan",  name: "Guliston",   lat: 40.4897, lng: 68.7842 },
+  { id: "navoi",     name: "Navoiy",     lat: 40.0844, lng: 65.3792 },
+  { id: "khiva",     name: "Xiva",       lat: 41.3775, lng: 60.3639 },
+];
+const DEFAULT_LOC = { lat: 41.2995, lng: 69.2401 };
+const PRAYER_TIME_KEY = { bomdod: "fajr", peshin: "dhuhr", asr: "asr", shom: "maghrib", xufton: "isha" };
+let selectedCityId = localStorage.getItem("meta:city-id") || "auto";
+let userLoc = (()=>{
+  try { const raw = localStorage.getItem("meta:loc"); return raw ? JSON.parse(raw) : DEFAULT_LOC; }
+  catch(e){ return DEFAULT_LOC; }
+})();
+let prayerTimesToday = null;
+
+function computePrayerTimes(){
+  if (typeof adhan === "undefined") return null;
+  try {
+    const coords = new adhan.Coordinates(userLoc.lat, userLoc.lng);
+    const params = adhan.CalculationMethod.MuslimWorldLeague();
+    params.madhab = adhan.Madhab.Hanafi; // O'zbekistonda Hanafiy mazhab - Asr vaqti shunga mos hisoblanadi
+    return new adhan.PrayerTimes(coords, new Date(), params);
+  } catch(e){ return null; }
+}
+
+function formatPrayerTime(d){
+  if (!d) return "";
+  return d.toLocaleTimeString("uz-UZ", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+function prayerTimeLabel(key){
+  if (!prayerTimesToday) return "";
+  return formatPrayerTime(prayerTimesToday[PRAYER_TIME_KEY[key]]);
+}
+
+function refreshPrayerTimes(){
+  prayerTimesToday = computePrayerTimes();
+  renderList();
+}
+
+function populateCitySelect(){
+  const sel = document.getElementById("citySelect");
+  sel.innerHTML = CITIES.map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+  sel.value = selectedCityId;
+}
+
+function useGeolocation(){
+  if (!navigator.geolocation){ userLoc = DEFAULT_LOC; refreshPrayerTimes(); return; }
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      userLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      try { localStorage.setItem("meta:loc", JSON.stringify(userLoc)); } catch(e){}
+      refreshPrayerTimes();
+    },
+    ()=>{ /* ruxsat berilmadi - oldingi/standart joylashuv bilan davom etiladi */ refreshPrayerTimes(); },
+    { timeout: 8000 }
+  );
+}
+
+function onCityChange(cityId){
+  selectedCityId = cityId;
+  try { localStorage.setItem("meta:city-id", cityId); } catch(e){}
+  const city = CITIES.find(c=>c.id===cityId);
+  if (cityId === "auto"){
+    useGeolocation();
+  } else {
+    userLoc = { lat: city.lat, lng: city.lng };
+    try { localStorage.setItem("meta:loc", JSON.stringify(userLoc)); } catch(e){}
+    refreshPrayerTimes();
+  }
+}
+
+function initPrayerTimes(){
+  populateCitySelect();
+  refreshPrayerTimes(); // saqlangan/standart koordinata bilan darhol ko'rsatish
+  if (selectedCityId === "auto") useGeolocation();
+}
 
 function fmt(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,"0"), day=String(d.getDate()).padStart(2,"0"); return `${y}-${m}-${day}`; }
 function addDays(d,n){ const nd=new Date(d); nd.setDate(nd.getDate()+n); return nd; }
@@ -914,7 +1028,7 @@ function renderList(){
       </div>
       <div class="row-mid">
         <div class="row-name">${p.label}</div>
-        <div class="row-sub">${done ? "Bajarildi" : "Bajarilmadi"}</div>
+        <div class="row-sub">${prayerTimeLabel(p.key) ? prayerTimeLabel(p.key) + " &middot; " : ""}${done ? "Bajarildi" : "Bajarilmadi"}</div>
       </div>
       <div class="check${done?' done':''}">
         <svg viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="#10142a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1015,6 +1129,7 @@ function renderAll(){
 }
 
 renderAll();
+initPrayerTimes();
 </script>
 </body>
 </html>
